@@ -14,8 +14,17 @@ paths:
   /tasks:
     get:
       summary: List all tasks
+      description: Returns all tasks. Use the `completed` query parameter to filter by completion status.
       tags:
         - Tasks
+      parameters:
+        - name: completed
+          in: query
+          required: false
+          description: Filter tasks by completion status. Omit to return all tasks.
+          schema:
+            type: boolean
+          example: true
       responses:
         '200':
           description: OK
@@ -25,6 +34,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid value for the completed query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: Validation failed
+                details:
+                  - completed must be true or false
     post:
       summary: Create a new task
       tags:
@@ -47,17 +66,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                  details:
-                    type: array
-                    items:
-                      type: string
-                example:
-                  errors:
-                    - 'Title must be at least 3 characters'
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: Validation failed
+                details:
+                  - Title must be at least 3 and at most 100 characters
   /health:
     get:
       summary: Health Check
@@ -90,3 +103,12 @@ components:
         completed:
           type: boolean
           example: false
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
